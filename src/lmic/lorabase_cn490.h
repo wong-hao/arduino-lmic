@@ -53,16 +53,12 @@ enum _dr_cn490_t {
         CN490_DR_NONE
 };
 
-// Default frequency plan for US 490MHz
+// Default frequency plan for CN 490MHz
 enum {
-        CN490_125kHz_UPFBASE = 470300000,
+        CN490_125kHz_UPFBASE = 473500000,
         CN490_125kHz_UPFSTEP = 200000,
-        CN490_125kHz_DNFBASE = 500300000,
+        CN490_125kHz_DNFBASE = 506700000,
         CN490_125kHz_DNFSTEP = 200000
-};
-enum {
-        CN490_F1 = 487100000,      
-        CN490_F2 = 507500000,      
 };
 enum {
         CN490_FREQ_MIN = 470000000,

@@ -212,9 +212,9 @@ static int8_t LMICcn490_getMaxEIRP(uint8_t mcmd_txparam) {
 void LMICcn490_updateTx(ostime_t txbeg) {
         u1_t chnl = LMIC.txChnl;
         if (chnl < 96) {
-                LMIC.freq = CN490_F1;
+                LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP;
                 LMIC.txpow = LMICcn490_getMaxEIRP(LMIC.txParam);
-        } 
+        }
 }
 
 #if !defined(DISABLE_BEACONS)
@@ -229,7 +229,7 @@ void LMICcn490_setBcnRxParams(void) {
 void LMICcn490_setRx1Params(void) {
     u1_t const txdr = LMIC.dndr;
     u1_t candidateDr;
-    LMIC.freq = CN490_F2;
+    LMIC.freq = LMIC.freq = CN490_125kHz_DNFBASE + (LMIC.txChnl & 0x7) * CN490_125kHz_DNFSTEP;;
     if ( /* TX datarate */txdr < LORAWAN_DR5)
             candidateDr = txdr + 0 - LMIC.rx1DrOffset;
     else
