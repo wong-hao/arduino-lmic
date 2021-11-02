@@ -111,7 +111,7 @@ Revision history:
                              /* (1 << LMIC_REGION_cn783) | */   \
                              /* (1 << LMIC_REGION_eu433) | */   \
                                 (1 << LMIC_REGION_au915) |      \
-                             /* (1 << LMIC_REGION_cn490) | */   \
+                                (1 << LMIC_REGION_cn490) |      \
                                 (1 << LMIC_REGION_as923) |      \
                                 (1 << LMIC_REGION_kr920) |      \
                                 (1 << LMIC_REGION_in866) |      \
@@ -260,7 +260,7 @@ Revision history:
                              /* (1 << LMIC_REGION_cn783) | */   \
                              /* (1 << LMIC_REGION_eu433) | */   \
                                 (1 << LMIC_REGION_au915) |      \
-                             /* (1 << LMIC_REGION_cn490) | */   \
+                                (1 << LMIC_REGION_cn490) |      \
                              /* (1 << LMIC_REGION_as923) | */   \
                              /* (1 << LMIC_REGION_kr920) | */   \
                              /* (1 << LMIC_REGION_in866) | */   \

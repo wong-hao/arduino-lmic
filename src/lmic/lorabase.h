@@ -227,6 +227,58 @@ enum _dr_configured_t {
 };
 # endif // LMIC_DR_LEGACY
 
+
+#elif defined(CFG_cn490)  // =========================================
+
+#include "lorabase_cn490.h"
+
+// implemented
+#define LMIC_ENABLE_TxParamSetupReq	1
+
+enum { DR_DFLTMIN = CN490_DR_SF7 };  // DR5
+
+// DR_PAGE is a debugging parameter; it must be defined but it has no use in arduino-lmic
+enum { DR_PAGE = DR_PAGE_CN490 };
+
+//enum { CHNL_PING         = 0 }; // used only for default init of state (follows beacon - rotating)
+enum { FREQ_PING         = CN490_125kHz_DNFBASE + 0*CN490_125kHz_DNFSTEP };  // default ping freq
+enum { DR_PING           = CN490_DR_SF10 };       // default ping DR
+enum { CHNL_DNW2         = 0 };
+enum { FREQ_DNW2         = 505300000 };
+enum { DR_DNW2           = CN490_DR_SF12 };
+enum { CHNL_BCN          = 0 }; // used only for default init of state (rotating beacon scheme)
+enum { DR_BCN            = CN490_DR_SF10 };
+// TODO(tmm@mcci.com): check this, as beacon DR was SF10 in IBM code.
+enum { AIRTIME_BCN       = 72192 };  // micros
+enum { LMIC_REGION_EIRP = CN490_LMIC_REGION_EIRP };         // region uses EIRP
+
+enum {
+    // Beacon frame format CN SF10
+    OFF_BCN_NETID    = 0,
+    OFF_BCN_RFU1     = 3,
+    OFF_BCN_TIME     = 7,
+    OFF_BCN_CRC1     = 9,
+    OFF_BCN_INFO     = 11,
+    OFF_BCN_LAT      = 10,
+    OFF_BCN_LON      = 13,
+    OFF_BCN_RFU2     = 16,
+    OFF_BCN_CRC2     = 19,
+    LEN_BCN          = 21
+};
+
+# if LMIC_DR_LEGACY
+enum _dr_configured_t {
+		DR_SF12   = CN490_DR_SF12,
+        DR_SF11   = CN490_DR_SF11,
+        DR_SF10   = CN490_DR_SF10,
+        DR_SF9    = CN490_DR_SF9,
+        DR_SF8    = CN490_DR_SF8,
+        DR_SF7    = CN490_DR_SF7,
+        DR_NONE   = CN490_DR_NONE,
+};
+# endif // LMIC_DR_LEGACY
+
+
 #elif defined(CFG_au915)  // =========================================
 
 #include "lorabase_au915.h"
@@ -281,6 +333,8 @@ enum _dr_configured_t {
         DR_SF7CR   = AU915_DR_SF7CR
 };
 # endif // LMIC_DR_LEGACY
+
+
 
 #elif defined(CFG_as923) // ==============================================
 

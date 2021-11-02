@@ -84,7 +84,7 @@
 // configured (e.g. on AVR it is not by default), otherwise using it can
 // cause crashing.
 #ifndef LMIC_DEBUG_LEVEL
-#define LMIC_DEBUG_LEVEL 0
+#define LMIC_DEBUG_LEVEL 2
 #endif
 
 // Enable this to allow using printf() to print to the given serial port
@@ -102,17 +102,17 @@
 // displaying runtime assertion failures. If you say nothing in your
 // lmic_project_config.h, runtime assertion failures are displayed
 // using the Serial object.
-#if ! defined(DISABLE_LMIC_FAILURE_TO) && ! defined(LMIC_FAILURE_TO)
-#define LMIC_FAILURE_TO Serial
+#if defined(LMIC_DEBUG_LEVEL)
+#define LMIC_PRINTF_TO Serial
 #endif
 
 // define this in lmic_project_config.h to disable all code related to joining
 //#define DISABLE_JOIN
 // define this in lmic_project_config.h to disable all code related to ping
-//#define DISABLE_PING
+#define DISABLE_PING
 // define this in lmic_project_config.h to disable all code related to beacon tracking.
 // Requires ping to be disabled too
-//#define DISABLE_BEACONS
+#define DISABLE_BEACONS
 
 // define these in lmic_project_config.h to disable the corresponding MAC commands.
 // Class A
@@ -190,6 +190,11 @@
 // LMIC certification requires full-length 255 frames, but to save RAM,
 // a shorter maximum can be set. This controls both RX and TX buffers,
 // so reducing this by 1 saves 2 bytes of RAM.
+
+#ifndef LMIC_ENABLE_long_messages
+#define LMIC_ENABLE_long_messages 0
+#endif
+
 #if defined(LMIC_ENABLE_long_messages) && defined(LMIC_MAX_FRAME_LENGTH)
 #error "Use only one of LMIC_ENABLE_long_messages or LMIC_MAX_FRAME_LENGTH"
 #elif defined(LMIC_ENABLE_long_messages) && LMIC_ENABLE_long_messages == 0

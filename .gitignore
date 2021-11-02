@@ -46,3 +46,5 @@ __vm
 
 # files from vscode
 .vscode
+
+arduino-lmic.si4project
