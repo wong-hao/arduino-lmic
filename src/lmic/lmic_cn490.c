@@ -131,8 +131,8 @@ bit_t LMIC_disableChannel(u1_t channel) {
         if (channel < 144) {
                 if (ENABLED_CHANNEL(channel)) {
                         result = 1;
-                        if (IS_CHANNEL_125khz(channel))
-                                LMIC.activeChannels125khz--;
+                        LMIC.activeChannels125khz--;
+
                 }
                 LMIC.channelMap[channel >> 4] &= ~(1 << (channel & 0xF));
         }
@@ -144,8 +144,8 @@ bit_t LMIC_enableChannel(u1_t channel) {
         if (channel < 144) {
                 if (!ENABLED_CHANNEL(channel)) {
                         result = 1;
-                        if (IS_CHANNEL_125khz(channel))
-                                LMIC.activeChannels125khz++;
+                        LMIC.activeChannels125khz++;
+
                 }
                 LMIC.channelMap[channel >> 4] |= (1 << (channel & 0xF));
         }
