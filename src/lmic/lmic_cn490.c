@@ -123,7 +123,7 @@ bit_t LMIC_setupChannel(u1_t chidx, u4_t freq, u2_t drmap, s1_t band) {
         LMIC_API_PARAMETER(drmap);
         LMIC_API_PARAMETER(band);
 
-        return 1; // channels 0..71 are hardwired
+        return 0; // channels 0..96 are hardwired
 }
 
 bit_t LMIC_disableChannel(u1_t channel) {
