@@ -284,9 +284,10 @@ void setup() {
     // ... extra definitions for channels 3..n here.
 
     #elif defined(CFG_cn490)
-    // CN channels 0-94 are configured automatically
+    // CN channels 0-95 are configured automatically
     // but only one group of 8 should (a subband) should be active
-    LMIC_selectSubBand(10);
+    //TODO: LMIC_selectSubBand沿用的us915且不会改，故只能设置0-7八组信道
+    LMIC_selectSubBand(7);
     
     #else
     # error Region not supported
