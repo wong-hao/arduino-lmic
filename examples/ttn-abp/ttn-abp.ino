@@ -78,7 +78,7 @@ static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 10;
+const unsigned TX_INTERVAL = 15;
 
 // Pin mapping Dragino Shiled
 // Adapted for Feather M0 per p.10 of [feather]
@@ -134,6 +134,12 @@ void onEvent (ev_t ev) {
               Serial.println(F("Received "));
               Serial.println(LMIC.dataLen);
               Serial.println(F(" bytes of payload"));
+              
+              for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) { //https://www.thethingsnetwork.org/forum/t/downlink-to-node-with-lmic/5127/12?u=learner
+              fprintf(stdout, "%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
+              }
+              Serial.println("\n");
+              
             }
             // Schedule next transmission
             os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
@@ -187,6 +193,7 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
+        // confirmed / confirmation by the server will be requested
         LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
         Serial.println(F("Packet queued"));
     }
@@ -296,9 +303,12 @@ void setup() {
     // Disable link check validation
     LMIC_setLinkCheckMode(0);
 
-    // TTN uses SF9 for its RX2 window.
-    LMIC.dn2Dr = DR_SF9;
-
+    // CN470 uses SF12 for its RX2 window.
+    LMIC.dn2Dr = DR_SF12;
+    
+    // Set ADR mode (if mobile turn off)
+    LMIC_setAdrMode(0);
+    
     // Set data rate and transmit power for uplink
     LMIC_setDrTxpow(DR_SF10,17);
 

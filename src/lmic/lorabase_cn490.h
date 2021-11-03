@@ -64,6 +64,9 @@ enum {
         CN490_125kHz_DNFSTEP = 200000
 };
 enum {
+        CN490_FDOWN = 505300000,      //      (RX2 freq, DR0)
+};
+enum {
         CN490_FREQ_MIN = 470000000,
         CN490_FREQ_MAX = 510000000
 };
