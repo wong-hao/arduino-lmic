@@ -53,17 +53,17 @@
 // first. When copying an EUI from ttnctl output, this means to reverse
 // the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
 // 0x70.
-static const u1_t PROGMEM APPEUI[8]={ FILLMEIN };
+static const u1_t PROGMEM APPEUI[8]={ 0x9e, 0x9e, 0x5b, 0x91, 0x91, 0x29, 0xdb, 0xd1 };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 // This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8]={ FILLMEIN };
+static const u1_t PROGMEM DEVEUI[8]={ 0x9e, 0x9e, 0x5b, 0x91, 0x91, 0x29, 0xdb, 0xd1 };
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 
 // This key should be in big endian format (or, since it is not really a
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
-static const u1_t PROGMEM APPKEY[16] = { FILLMEIN };
+static const u1_t PROGMEM APPKEY[16] = { 0x70, 0xb7, 0xa3, 0x3b, 0x62, 0x45, 0x99, 0x69, 0x9c, 0x4a, 0x80, 0x2b, 0x9f, 0x8d, 0xe5, 0xb8 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
 static uint8_t mydata[] = "Hello, world!";
@@ -71,14 +71,16 @@ static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 60;
+const unsigned TX_INTERVAL = 10;
 
-// Pin mapping
+// Pin mapping Dragino Shiled
+// Adapted for Feather M0 per p.10 of [feather]
 const lmic_pinmap lmic_pins = {
-    .nss = 6,
-    .rxtx = LMIC_UNUSED_PIN,
-    .rst = 5,
-    .dio = {2, 3, 4},
+    .nss = 10,// Connected to pin D10
+    .rxtx = LMIC_UNUSED_PIN,// For placeholder only, Do not connected on RFM92/RFM95
+    .rst = 9,// Needed on RFM92/RFM95? (probably not)
+    .dio = {2, 6, 7},// Specify pin numbers for DIO0, 1, 2
+// connected to D2, D6, D7 
 };
 
 void printHex2(unsigned v) {
@@ -158,9 +160,16 @@ void onEvent (ev_t ev) {
             if (LMIC.txrxFlags & TXRX_ACK)
               Serial.println(F("Received ack"));
             if (LMIC.dataLen) {
-              Serial.print(F("Received "));
-              Serial.print(LMIC.dataLen);
+              Serial.println(F("Received "));
+              Serial.println(LMIC.dataLen);
               Serial.println(F(" bytes of payload"));
+
+              Serial.print(F(" Base64-decoded payload: "));
+              for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) { //https://www.thethingsnetwork.org/forum/t/downlink-to-node-with-lmic/5127/12?u=learner
+              fprintf(stdout, "%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
+              }
+              Serial.println("\n");
+              
             }
             // Schedule next transmission
             os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
@@ -215,6 +224,7 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
+        // confirmed / confirmation by the server will be requested
         LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
         Serial.println(F("Packet queued"));
     }
@@ -222,7 +232,7 @@ void do_send(osjob_t* j){
 }
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println(F("Starting"));
 
     #ifdef VCC_ENABLE
@@ -237,6 +247,22 @@ void setup() {
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
 
+    #if defined(CFG_cn490)
+    // CN channels 0-95 are configured automatically
+    // but only one group of 8 should (a subband) should be active
+    //TODO: LMIC_selectSubBand沿用的us915且不会改，故只能设置0-7八组信道
+    LMIC_selectSubBand(7);
+    
+    #else
+    # error Region not supported
+    #endif
+    
+    // Set ADR mode (if mobile turn off)
+    LMIC_setAdrMode(0);
+
+    // Set data rate and transmit power for uplink
+    LMIC_setDrTxpow(DR_SF10,17);
+    
     // Start job (sending automatically starts OTAA too)
     do_send(&sendjob);
 }

@@ -134,7 +134,8 @@ void onEvent (ev_t ev) {
               Serial.println(F("Received "));
               Serial.println(LMIC.dataLen);
               Serial.println(F(" bytes of payload"));
-              
+
+              Serial.print(F(" Base64-decoded payload: "));
               for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) { //https://www.thethingsnetwork.org/forum/t/downlink-to-node-with-lmic/5127/12?u=learner
               fprintf(stdout, "%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
               }
