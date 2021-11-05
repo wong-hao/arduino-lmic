@@ -128,13 +128,10 @@ bit_t LMIC_setupChannel(u1_t chidx, u4_t freq, u2_t drmap, s1_t band) {
 
 bit_t LMIC_disableChannel(u1_t channel) {
         bit_t result = 0;
-        if (channel < 72) {
+        if (channel < 96) {
                 if (ENABLED_CHANNEL(channel)) {
                         result = 1;
-                        if (IS_CHANNEL_125khz(channel))
-                                LMIC.activeChannels125khz--;
-                        else if (IS_CHANNEL_500khz(channel))
-                                LMIC.activeChannels500khz--;
+                        LMIC.activeChannels125khz--;
                 }
                 LMIC.channelMap[channel >> 4] &= ~(1 << (channel & 0xF));
         }
@@ -143,13 +140,10 @@ bit_t LMIC_disableChannel(u1_t channel) {
 
 bit_t LMIC_enableChannel(u1_t channel) {
         bit_t result = 0;
-        if (channel < 72) {
+        if (channel < 96) {
                 if (!ENABLED_CHANNEL(channel)) {
                         result = 1;
-                        if (IS_CHANNEL_125khz(channel))
-                                LMIC.activeChannels125khz++;
-                        else if (IS_CHANNEL_500khz(channel))
-                                LMIC.activeChannels500khz++;
+                        LMIC.activeChannels125khz++;
                 }
                 LMIC.channelMap[channel >> 4] |= (1 << (channel & 0xF));
         }
@@ -157,7 +151,7 @@ bit_t LMIC_enableChannel(u1_t channel) {
 }
 
 bit_t  LMIC_enableSubBand(u1_t band) {
-        ASSERT(band < 8);
+        ASSERT(band < 12);
         u1_t start = band * 8;
         u1_t end = start + 8;
         bit_t result = 0;
@@ -166,14 +160,11 @@ bit_t  LMIC_enableSubBand(u1_t band) {
         for (int channel = start; channel < end; ++channel)
                 result |= LMIC_enableChannel(channel);
 
-        // there's a single 500 kHz channel associated with
-        // each group of 8 125 kHz channels. Enable it, too.
-        result |= LMIC_enableChannel(64 + band);
         return result;
 }
 
 bit_t  LMIC_disableSubBand(u1_t band) {
-        ASSERT(band < 8);
+        ASSERT(band < 12);
         u1_t start = band * 8;
         u1_t end = start + 8;
         bit_t result = 0;
@@ -182,16 +173,13 @@ bit_t  LMIC_disableSubBand(u1_t band) {
         for (int channel = start; channel < end; ++channel)
                 result |= LMIC_disableChannel(channel);
 
-        // there's a single 500 kHz channel associated with
-        // each group of 8 125 kHz channels. Disable it, too.
-        result |= LMIC_disableChannel(64 + band);
         return result;
 }
 
 bit_t  LMIC_selectSubBand(u1_t band) {
         bit_t result = 0;
 
-        ASSERT(band < 8);
+        ASSERT(band < 12);
         for (int b = 0; b<8; ++b) {
                 if (band == b)
                         result |= LMIC_enableSubBand(b);
@@ -221,7 +209,14 @@ static int8_t LMICcn490_getMaxEIRP(uint8_t mcmd_txparam) {
 void LMICcn490_updateTx(ostime_t txbeg) {
         u1_t chnl = LMIC.txChnl;
         if (chnl < 96) {
-                LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP;
+                
+                //接到ADR下发指令后不知为何上行信道会重新选择到88-95，只能进行手动削减偏移
+                if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP > CN490_125kHz_UPFBASE + 63*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP - 8*CN490_125kHz_UPFSTEP;
+                }else{
+                         LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP;
+                }
+
                 LMIC.txpow = LMICcn490_getMaxEIRP(LMIC.txParam);
         }
 }
@@ -238,7 +233,8 @@ void LMICcn490_setBcnRxParams(void) {
 void LMICcn490_setRx1Params(void) {
     u1_t const txdr = LMIC.dndr;
     u1_t candidateDr;
-    LMIC.freq = LMIC.freq = CN490_125kHz_DNFBASE + (LMIC.txChnl & 0x7) * CN490_125kHz_DNFSTEP;;
+    LMIC.freq = CN490_125kHz_DNFBASE + (LMIC.txChnl & 0x7) * CN490_125kHz_DNFSTEP;
+    
     if ( /* TX datarate */txdr < LORAWAN_DR5)
             candidateDr = txdr + 0 - LMIC.rx1DrOffset;
     else
