@@ -259,9 +259,6 @@ void setup() {
     
     // Set ADR mode (if mobile turn off)
     LMIC_setAdrMode(0);
-
-    // Set data rate and transmit power for uplink
-    LMIC_setDrTxpow(DR_SF10,17);
     
     // Start job (sending automatically starts OTAA too)
     do_send(&sendjob);
