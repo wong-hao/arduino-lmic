@@ -199,7 +199,7 @@ struct lmic_saved_adr_state_s {
 #elif CFG_LMIC_US_like  // US915 spectrum =================================================
 
 struct lmic_saved_adr_state_s {
-    u2_t        channelMap[(72+15)/16];  // enabled bits
+    u2_t        channelMap[(96+15)/16];  // enabled bits
     u2_t        activeChannels125khz;
     u2_t        activeChannels500khz;
 };
@@ -557,8 +557,8 @@ struct lmic_t {
     u2_t        channelMap;
     u2_t        channelShuffleMap;
 #elif CFG_LMIC_US_like
-    u2_t        channelMap[(72+15)/16];  // enabled bits
-    u2_t        channelShuffleMap[(72+15)/16];  // enabled bits
+    u2_t        channelMap[(96+15)/16];  // enabled bits
+    u2_t        channelShuffleMap[(96+15)/16];  // enabled bits
     u2_t        activeChannels125khz;
     u2_t        activeChannels500khz;
 #endif

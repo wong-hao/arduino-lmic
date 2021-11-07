@@ -30,7 +30,6 @@
 # define _lmic_bandplan_cn490_h_
 
 // preconditions for lmic_us_like.h
-#define LMICuslike_getFirst500kHzDR()   (LORAWAN_DR4)
 #define LMICuslike_getJoin125kHzDR()    (LORAWAN_DR0)
 
 #ifndef _lmic_us_like_h_

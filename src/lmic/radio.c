@@ -856,7 +856,7 @@ static void txlora () {
            pw,
            bw == BW125 ? 125 : (bw == BW250 ? 250 : 500),
            cr == CR_4_5 ? 5 : (cr == CR_4_6 ? 6 : (cr == CR_4_7 ? 7 : 8)),
-           fcntUp - 1,
+           fcntUp,
            getIh(LMIC.rps)
    );
 #endif

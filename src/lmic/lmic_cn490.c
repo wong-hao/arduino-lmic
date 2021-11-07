@@ -254,7 +254,7 @@ void LMICcn490_initJoinLoop(void) {
 	LMICuslike_initJoinLoop();
 	
 	// initialize the adrTxPower.
-	LMIC.adrTxPow = 19.15; // dBm
+	LMIC.adrTxPow = LMICcn490_getMaxEIRP(LMIC.txParam); // dBm
 
 }
 

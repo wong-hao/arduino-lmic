@@ -32,10 +32,6 @@
 
 #if CFG_LMIC_US_like
 
-#ifndef LMICuslike_getFirst500kHzDR
-# error "LMICuslike_getFirst500kHzDR() not defined by bandplan"
-#endif
-
 ///
 /// \brief set LMIC.txChan to the next selected channel.
 ///
@@ -86,8 +82,7 @@ void LMICuslike_initDefaultChannels(bit_t fJoin) {
                 LMIC.channelMap[i] = 0xFFFF;
         LMIC.channelMap[4] = 0x00FF;
         os_clearMem(LMIC.channelShuffleMap, sizeof(LMIC.channelShuffleMap));
-        LMIC.activeChannels125khz = 64;
-        LMIC.activeChannels500khz = 8;
+        LMIC.activeChannels125khz = 96;
         // choose a random channel.
         LMIC.txChnl = 0xFF;
 }
@@ -96,20 +91,11 @@ void LMICuslike_initDefaultChannels(bit_t fJoin) {
 bit_t LMICuslike_canMapChannels(u1_t chpage, u2_t chmap) {
 	/*
 	|| MCMD_LinkADRReq_ChMaskCntl_USLIKE_125ON and MCMD_LinkADRReq_ChMaskCntl_USLIKE_125OFF are special. The
-	|| channel map appllies to 500kHz (ch 64..71) and in addition
-	|| all channels 0..63 are turned off or on.  MCMC_LADR_CHP_BANK
+	|| all channels 0..95 are turned off or on.  MCMC_LADR_CHP_BANK
 	|| is also special, in that it enables subbands.
 	*/
 	if (chpage < MCMD_LinkADRReq_ChMaskCntl_USLIKE_SPECIAL) {
-		// operate on channels 0..15, 16..31, 32..47, 48..63, 64..71
-		if (chpage == MCMD_LinkADRReq_ChMaskCntl_USLIKE_500K) {
-			if (chmap & 0xFF00) {
-				// those are reserved bits, fail.
-				return 0;
-			}
-		} else {
-			return 1;
-		}
+                return 1;
 	} else if (chpage == MCMD_LinkADRReq_ChMaskCntl_USLIKE_BANK) {
 		if (chmap == 0 || (chmap & 0xFF00) != 0) {
 			// no bits set, or reserved bitsset , fail.
@@ -119,8 +105,6 @@ bit_t LMICuslike_canMapChannels(u1_t chpage, u2_t chmap) {
 	           chpage == MCMD_LinkADRReq_ChMaskCntl_USLIKE_125OFF) {
                 u1_t const en125 = chpage == MCMD_LinkADRReq_ChMaskCntl_USLIKE_125ON;
 
-		// if disabling all 125kHz chans, must have at least one 500kHz chan
-		// don't allow reserved bits to be set in chmap.
 		if ((! en125 && chmap == 0) || (chmap & 0xFF00) != 0)
 			return 0;
 	} else {
@@ -135,7 +119,6 @@ bit_t LMICuslike_canMapChannels(u1_t chpage, u2_t chmap) {
 bit_t LMICuslike_mapChannels(u1_t chpage, u2_t chmap) {
 	/*
 	|| MCMD_LinkADRReq_ChMaskCntl_USLIKE_125ON and MCMD_LinkADRReq_ChMaskCntl_USLIKE_125OFF are special. The
-	|| channel map appllies to 500kHz (ch 64..71) and in addition
 	|| all channels 0..63 are turned off or on.  MCMC_LADR_CHP_BANK
 	|| is also special, in that it enables subbands.
 	*/
@@ -157,15 +140,12 @@ bit_t LMICuslike_mapChannels(u1_t chpage, u2_t chmap) {
                         // it's really the base.
                         base = chpage;
                         top = base + 16;
-                        if (base == 64) {
-                                top = 72;
-                        }
                 } else /* if (chpage == MCMD_LinkADRReq_ChMaskCntl_USLIKE_125ON ||
                         chpage == MCMD_LinkADRReq_ChMaskCntl_USLIKE_125OFF) */ {
                         u1_t const en125 = chpage == MCMD_LinkADRReq_ChMaskCntl_USLIKE_125ON;
 
                         // enable or disable all 125kHz channels
-                        for (u1_t chnl = 0; chnl < 64; ++chnl) {
+                        for (u1_t chnl = 0; chnl < 96; ++chnl) {
                                 if (en125)
                                         LMIC_enableChannel(chnl);
                                 else
@@ -173,8 +153,7 @@ bit_t LMICuslike_mapChannels(u1_t chpage, u2_t chmap) {
                         }
 
                         // then apply mask to top 8 channels.
-                        base = 64;
-                        top = 72;
+                        base = 96;
                 }
 
                 // apply chmap to channels in [base..top-1].
@@ -187,45 +166,28 @@ bit_t LMICuslike_mapChannels(u1_t chpage, u2_t chmap) {
                 }
         }
 
-        LMICOS_logEventUint32("LMICuslike_mapChannels", ((u4_t)LMIC.activeChannels125khz << 16u)|(LMIC.activeChannels500khz << 0u));
-	return (LMIC.activeChannels125khz > 0) || (LMIC.activeChannels500khz > 0);
+        LMICOS_logEventUint32("LMICuslike_mapChannels", ((u4_t)LMIC.activeChannels125khz << 16u));
+	return (LMIC.activeChannels125khz > 0);
 }
 
 // US does not have duty cycling - return now as earliest TX time
 // but also do the channel hopping dance.
 ostime_t LMICuslike_nextTx(ostime_t now) {
         // TODO(tmm@mcci.com): use a static const for US-like
-        if (LMIC.datarate >= LMICuslike_getFirst500kHzDR()) { // 500kHz
-                if (LMIC.activeChannels500khz > 0) {
-                        setNextChannel(64, 64 + 8, LMIC.activeChannels500khz);
-                } else if (LMIC.activeChannels125khz > 0) {
-                        LMIC.datarate = lowerDR(LMICuslike_getFirst500kHzDR(), 1);
-                        setNextChannel(0, 64, LMIC.activeChannels125khz);
-                        LMICOS_logEvent("LMICuslike_nextTx: no 500k, choose 125k");
-                } else {
-                        LMICOS_logEvent("LMICuslike_nextTx: no channels at all (500)");
-                }
+       // 125kHz
+        if (LMIC.activeChannels125khz > 0) {
+                setNextChannel(0, 96, LMIC.activeChannels125khz);
+        } else {
+                LMICOS_logEvent("LMICuslike_nextTx: no channels at all (125)");
         }
-        else { // 125kHz
-                if (LMIC.activeChannels125khz > 0) {
-                        setNextChannel(0, 64, LMIC.activeChannels125khz);
-                } else if (LMIC.activeChannels500khz > 0) {
-                        LMIC.datarate = LMICuslike_getFirst500kHzDR();
-                        setNextChannel(64, 64 + 8, LMIC.activeChannels500khz);
-                        LMICOS_logEvent("LMICuslike_nextTx: no 125k, choose 500k");
-                } else {
-                        LMICOS_logEvent("LMICuslike_nextTx: no channels at all (125)");
-                }
-        }
+
         return now;
 }
 
 bit_t LMICuslike_isDataRateFeasible(dr_t dr) {
-        if (dr >= LMICuslike_getFirst500kHzDR()) { // 500kHz
-                return LMIC.activeChannels500khz > 0;
-        } else {
-                return LMIC.activeChannels125khz > 6;
-        }
+
+        return LMIC.activeChannels125khz > 6;
+        
 }
 
 #if !defined(DISABLE_JOIN)
@@ -237,14 +199,14 @@ void LMICuslike_initJoinLoop(void) {
         // the join. The join logic uses the current txChnl,
         // then changes after the rx window expires; so we need to set a valid
         // starting point.
-        setNextChannel(0, 64, LMIC.activeChannels125khz);
+        setNextChannel(0, 96, LMIC.activeChannels125khz);
 
         // make sure LMIC.txend is valid.
         LMIC.txend = os_getTime();
         ASSERT((LMIC.opmode & OP_NEXTCHNL) == 0);
 
-        // make sure the datarate is set to DR2 per LoRaWAN regional reqts V1.0.2,
-        // section 2.*.2
+        // make sure the datarate is set to DR5-DR0 per LoRaWAN regional reqts V1.0.2,
+        // section 2.6.2
         LMICcore_setDrJoin(DRCHG_SET, LMICbandplan_getInitialDrJoin());
 
         // TODO(tmm@mcci.com) need to implement the transmit randomization and
@@ -265,34 +227,21 @@ void LMICuslike_initJoinLoop(void) {
 //
 ostime_t LMICuslike_nextJoinState(void) {
         // Try the following:
-        //   DR0 (SF10)  on a random channel 0..63
+        //   DR0 (SF10)  on a random channel 0..95
         //      (honoring enable mask)
-        //   DR4 (SF8C)  on a random 500 kHz channel 64..71
-        //      (always determined by
-        //       previously selected
-        //       125 kHz channel)
-        //
+
         u1_t failed = 0;
         // TODO(tmm@mcci.com) parameterize for US-like
-        if (LMIC.datarate != LMICuslike_getFirst500kHzDR()) {
-                // assume that 500 kHz equiv of last 125 kHz channel
-                // is also enabled, and use it next.
-                LMIC.txChnl_125kHz = LMIC.txChnl;
-                LMIC.txChnl = 64 + (LMIC.txChnl >> 3);
-                LMICcore_setDrJoin(DRCHG_SET, LMICuslike_getFirst500kHzDR());
-        }
-        else {
-                // restore invariant
-                LMIC.txChnl = LMIC.txChnl_125kHz;
-                setNextChannel(0, 64, LMIC.activeChannels125khz);
+        // restore invariant
+        LMIC.txChnl = LMIC.txChnl_125kHz;
+        setNextChannel(0, 96, LMIC.activeChannels125khz);
 
-                // TODO(tmm@mcci.com) parameterize
-                s1_t dr = LMICuslike_getJoin125kHzDR();
-                if ((++LMIC.txCnt & 0x7) == 0) {
-                        failed = 1; // All DR exhausted - signal failed
-                }
-                LMICcore_setDrJoin(DRCHG_SET, dr);
+        // TODO(tmm@mcci.com) parameterize
+        s1_t dr = LMICuslike_getJoin125kHzDR();
+        if ((++LMIC.txCnt & 0x7) == 0) {
+                failed = 1; // All DR exhausted - signal failed
         }
+        LMICcore_setDrJoin(DRCHG_SET, dr);
         // tell the main loop that we've already selected a channel.
         LMIC.opmode &= ~OP_NEXTCHNL;
 
@@ -312,6 +261,7 @@ ostime_t LMICuslike_nextJoinState(void) {
                         : LMICcore_rndDelay(16 >> LMIC.datarate));
         // 1 - triggers EV_JOIN_FAILED event
         return failed;
+
 }
 #endif
 
@@ -328,7 +278,7 @@ void LMICuslike_processJoinAcceptCFList(void) {
             LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": Setup channel mask, group=%u, mask=%04x\n", os_getTime(), chidx, mask);
 #endif
             for ( u1_t chnum = chidx; chnum < chidx + 16; ++chnum, mask >>= 1) {
-                if (chnum >= 72) {
+                if (chnum >= 96) {
                     break;
                 } else if (mask & 1) {
                     LMIC_enableChannel(chnum);
@@ -348,7 +298,6 @@ void LMICuslike_saveAdrState(lmic_saved_adr_state_t *pStateBuffer) {
                 sizeof(LMIC.channelMap)
         );
         pStateBuffer->activeChannels125khz = LMIC.activeChannels125khz;
-        pStateBuffer->activeChannels500khz = LMIC.activeChannels500khz;
 }
 
 void LMICuslike_restoreAdrState(const lmic_saved_adr_state_t *pStateBuffer) {
@@ -358,7 +307,6 @@ void LMICuslike_restoreAdrState(const lmic_saved_adr_state_t *pStateBuffer) {
                 sizeof(LMIC.channelMap)
         );
         LMIC.activeChannels125khz = pStateBuffer->activeChannels125khz;
-        LMIC.activeChannels500khz = pStateBuffer->activeChannels500khz;
 }
 
 
