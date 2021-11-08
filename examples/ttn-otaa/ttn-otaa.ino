@@ -139,6 +139,7 @@ void onEvent (ev_t ev) {
             // Disable link check validation (automatically enabled
             // during join, but because slow data rates change max TX
 	    // size, we don't use it in this example.
+            //https://forum.mcci.io/t/lmic-setlinkcheckmode-questions/96/2?u=wong-hao
             LMIC_setLinkCheckMode(0);
             break;
         /*
@@ -160,11 +161,11 @@ void onEvent (ev_t ev) {
             if (LMIC.txrxFlags & TXRX_ACK)
               Serial.println(F("Received ack"));
             if (LMIC.dataLen) {
-              Serial.println(F("Received "));
-              Serial.println(LMIC.dataLen);
-              Serial.println(F(" bytes of payload"));
+              Serial.print(F("Received "));
+              Serial.print(LMIC.dataLen);
+              Serial.print(F(" bytes of payload: "));
 
-              Serial.print(F(" Base64-decoded hexadecimal string payload: ")); //https://www.thethingsnetwork.org/forum/t/downlink-to-node-with-lmic/5127/12?u=learner
+              Serial.print(F("Base64-decoded hexadecimal string payload: ")); //https://www.thethingsnetwork.org/forum/t/downlink-to-node-with-lmic/5127/12?u=learner
               for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) { 
               Serial.print(LMIC.frame[LMIC.dataBeg + loopcount], HEX);
               }

@@ -1975,6 +1975,15 @@ static bit_t buildDataFrame (void) {
             }
         }
         LMIC.frame[end] = LMIC.pendTxPort;
+
+#if LMIC_DEBUG_LEVEL > 0
+        LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": Sent %d bytes of Frame Payload: Base64-decoded hexadecimal string payload:",os_getTime(), LMIC.pendTxLen);
+        for(int loopcount = 0; loopcount < LMIC.pendTxLen; loopcount++){
+        printf("%02X", LMIC.pendTxData[LMIC.dataBeg + loopcount]);
+        }
+        printf("\n");
+#endif
+
         os_copyMem(LMIC.frame+end+1, LMIC.pendTxData, dlen);
         aes_cipher(LMIC.pendTxPort==0 ? LMIC.nwkKey : LMIC.artKey,
                    LMIC.devaddr, LMIC.seqnoUp-1,
@@ -1994,6 +2003,15 @@ static bit_t buildDataFrame (void) {
                        e_.opts.length = end-LORA::OFF_DAT_OPTS,
                        memcpy(&e_.opts[0], LMIC.frame+LORA::OFF_DAT_OPTS, end-LORA::OFF_DAT_OPTS)));
     LMIC.dataLen = flen;
+
+#if LMIC_DEBUG_LEVEL > 0
+                    LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": Sent %d bytes of PHY Payload: ",os_getTime(), LMIC.dataLen);
+                    for(int loopcount = 0; loopcount < LMIC.dataLen; loopcount++){
+                    printf("%02X", LMIC.frame[loopcount]);
+                    }
+                    printf("\n"); 
+#endif
+
     return 1;
 }
 
