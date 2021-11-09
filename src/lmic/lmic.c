@@ -1977,6 +1977,10 @@ static bit_t buildDataFrame (void) {
         LMIC.frame[end] = LMIC.pendTxPort;
 
 #if LMIC_DEBUG_LEVEL > 0
+        LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": upRepeat now: %d\n",os_getTime(), LMIC.upRepeat);
+#endif
+
+#if LMIC_DEBUG_LEVEL > 0
         LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": Sent %d bytes of Frame Payload: Base64-decoded hexadecimal string payload:",os_getTime(), LMIC.pendTxLen);
         for(int loopcount = 0; loopcount < LMIC.pendTxLen; loopcount++){
         printf("%02X", LMIC.pendTxData[LMIC.dataBeg + loopcount]);
