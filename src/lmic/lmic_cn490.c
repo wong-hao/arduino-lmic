@@ -209,12 +209,30 @@ static int8_t LMICcn490_getMaxEIRP(uint8_t mcmd_txparam) {
 void LMICcn490_updateTx(ostime_t txbeg) {
         u1_t chnl = LMIC.txChnl;
         if (chnl < 96) {
-                
-                //手动削减偏移防止不在80-87信道工作
-                if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP > CN490_125kHz_UPFBASE + 63*CN490_125kHz_UPFSTEP){
-                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP - 8*CN490_125kHz_UPFSTEP;
+                //手动增加偏移防止ABP在ADR后低于80-87信道工作
+
+                if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (1*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (10*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (2*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (9*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (3*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (8*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (4*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (7*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (5*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (6*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (6*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (5*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (7*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (4*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (8*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (3*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (9*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (2*8)*CN490_125kHz_UPFSTEP;
+                }else if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (10*8)*CN490_125kHz_UPFSTEP){
+                        LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (1*8)*CN490_125kHz_UPFSTEP;
                 }else{
-                         LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP;
+                      LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP;
                 }
 
                 LMIC.txpow = LMICcn490_getMaxEIRP(LMIC.txParam);

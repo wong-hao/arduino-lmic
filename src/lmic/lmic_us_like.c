@@ -58,8 +58,14 @@ static void setNextChannel(uint16_t start, uint16_t end, uint16_t count) {
                                 LMIC.txChnl == 0xFF ? -1 : LMIC.txChnl
                                 );
 
-        if (candidate >= 0)
-                LMIC.txChnl = candidate;
+        if (candidate >= 0){
+                if(candidate <= 63){ //由于不会修改setNextChannel设置使得OTAA入网请求低于80-87信道，只能通过偏移初始值达到选择80-87信道的结果
+                        LMIC.txChnl = candidate + 8;
+                }else{
+                        LMIC.txChnl = candidate;
+                }
+        }
+
 }
 
 
