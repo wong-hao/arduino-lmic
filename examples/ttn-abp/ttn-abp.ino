@@ -198,6 +198,7 @@ void do_send(osjob_t* j){
         LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
         Serial.println(F("Packet queued"));
     }
+              
     // Next TX is scheduled after TX_COMPLETE event.
 }
 
@@ -294,8 +295,7 @@ void setup() {
     #elif defined(CFG_cn490)
     // CN channels 0-95 are configured automatically
     // but only one group of 8 should (a subband) should be active
-    //TODO: LMIC_selectSubBand沿用的us915且不会改，故只能设置0-7八组信道
-    LMIC_selectSubBand(7);
+    LMIC_selectSubBand(10);
     
     #else
     # error Region not supported

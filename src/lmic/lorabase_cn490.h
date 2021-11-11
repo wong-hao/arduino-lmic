@@ -55,12 +55,11 @@ enum _dr_cn490_t {
 
 // Default frequency plan for CN 490MHz
 enum {
-        //CN490_125kHz_UPFBASE = 470300000, //由于不会修改LMIC_selectSubBand、LMICcn490_setRx1Params中对于掩码的设置，只能通过偏移初始值达到选择80-87信道的结果
+        //CN490_125kHz_UPFBASE = 470300000, //由于不会修改LMIC_selectSubBand中对于掩码的设置使得OTAA入网请求低于80-87信道，只能通过偏移初始值达到选择80-87信道的结果
         CN490_125kHz_UPFBASE = 475100000,
         CN490_125kHz_UPFSTEP = 200000,
         
-        //CN490_125kHz_DNFBASE = 500300000,
-        CN490_125kHz_DNFBASE = 506700000,
+        CN490_125kHz_DNFBASE = 500300000,
         CN490_125kHz_DNFSTEP = 200000
 };
 enum {

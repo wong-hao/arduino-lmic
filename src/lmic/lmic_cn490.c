@@ -210,7 +210,7 @@ void LMICcn490_updateTx(ostime_t txbeg) {
         u1_t chnl = LMIC.txChnl;
         if (chnl < 96) {
                 
-                //接到ADR下发指令后不知为何上行信道会重新选择到88-95，只能进行手动削减偏移
+                //手动削减偏移防止不在80-87信道工作
                 if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP > CN490_125kHz_UPFBASE + 63*CN490_125kHz_UPFSTEP){
                         LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP - 8*CN490_125kHz_UPFSTEP;
                 }else{
@@ -233,7 +233,7 @@ void LMICcn490_setBcnRxParams(void) {
 void LMICcn490_setRx1Params(void) {
     u1_t const txdr = LMIC.dndr;
     u1_t candidateDr;
-    LMIC.freq = CN490_125kHz_DNFBASE + (LMIC.txChnl & 0x7) * CN490_125kHz_DNFSTEP;
+    LMIC.freq = CN490_125kHz_DNFBASE + (LMIC.txChnl & 0x7) * CN490_125kHz_DNFSTEP + 32 * CN490_125kHz_DNFSTEP; // 由于不会修改LMICcn490_setRx1Params中对于掩码的设置只能手动增加偏移防止不在80-87信道工作
     
     if ( /* TX datarate */txdr < LORAWAN_DR5)
             candidateDr = txdr + 0 - LMIC.rx1DrOffset;
