@@ -2009,7 +2009,7 @@ static bit_t buildDataFrame (void) {
     LMIC.dataLen = flen;
 
 #if LMIC_DEBUG_LEVEL > 0
-                    LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": Sent %d bytes of PHY Payload: ",os_getTime(), LMIC.dataLen);
+                    LMIC_DEBUG_PRINTF("Sent %d bytes of PHY Payload: ", LMIC.dataLen);
                     for(int loopcount = 0; loopcount < LMIC.dataLen; loopcount++){
                     printf("%02X", LMIC.frame[loopcount]);
                     }
@@ -2059,7 +2059,7 @@ static bit_t buildDataFrame (void) {
                     uint16_t payload_crc16_calc;
 
                     payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
-                    LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n ",os_getTime(), payload_crc16_calc, payload_crc16_calc);
+                    LMIC_DEBUG_PRINTF("Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n ", payload_crc16_calc, payload_crc16_calc);
 
 #endif
 

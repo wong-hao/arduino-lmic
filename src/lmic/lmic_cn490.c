@@ -209,7 +209,7 @@ static int8_t LMICcn490_getMaxEIRP(uint8_t mcmd_txparam) {
 void LMICcn490_updateTx(ostime_t txbeg) {
         u1_t chnl = LMIC.txChnl;
         if (chnl < 96) {
-                //手动增加偏移防止ABP在ADR后低于80-87信道工作
+                //手动增加偏移防止ABP在ADR后不在80-87信道工作
 
                 if(CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP < CN490_125kHz_UPFBASE + (1*8)*CN490_125kHz_UPFSTEP){
                         LMIC.freq = CN490_125kHz_UPFBASE + chnl*CN490_125kHz_UPFSTEP + (10*8)*CN490_125kHz_UPFSTEP;
