@@ -54,16 +54,16 @@
 
 // LoRaWAN NwkSKey, network session key
 // This should be in big-endian (aka msb).
-static const PROGMEM u1_t NWKSKEY[16] = { 0x43, 0x57, 0x9e, 0xa9, 0x9c, 0xf9, 0x25, 0x62, 0x04, 0xd4, 0x77, 0x8f, 0x63, 0xa6, 0x1c, 0x0c };
+static const PROGMEM u1_t NWKSKEY[16] = { FILLMEIN };
 
 // LoRaWAN AppSKey, application session key
 // This should also be in big-endian (aka msb).
-static const u1_t PROGMEM APPSKEY[16] = { 0xe9, 0xb5, 0x3b, 0x90, 0x85, 0x77, 0xe0, 0xcf, 0x4a, 0x7d, 0xbe, 0x49, 0x0d, 0x40, 0xb0, 0x45 };
+static const u1_t PROGMEM APPSKEY[16] = { FILLMEIN };
 
 // LoRaWAN end-device address (DevAddr)
 // See http://thethingsnetwork.org/wiki/AddressSpace
 // The library converts the address to network byte order as needed, so this should be in big-endian (aka msb) too.
-static const u4_t DEVADDR = 0x00deea15 ; // <-- Change this address for every node!
+static const u4_t DEVADDR = FILLMEIN ; // <-- Change this address for every node!
 
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
@@ -78,16 +78,17 @@ static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 15;
+const unsigned TX_INTERVAL = 60;
 
-// Pin mapping Dragino Shiled
+// Pin mapping
 // Adapted for Feather M0 per p.10 of [feather]
 const lmic_pinmap lmic_pins = {
-    .nss = 10,// Connected to pin D10
-    .rxtx = LMIC_UNUSED_PIN,// For placeholder only, Do not connected on RFM92/RFM95
-    .rst = 9,// Needed on RFM92/RFM95? (probably not)
-    .dio = {2, 6, 7},// Specify pin numbers for DIO0, 1, 2
-// connected to D2, D6, D7 
+    .nss = 8,                       // chip select on feather (rf95module) CS
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = 4,                       // reset pin
+    .dio = {6, 5, LMIC_UNUSED_PIN}, // assumes external jumpers [feather_lora_jumper]
+                                    // DIO1 is on JP1-1: is io1 - we connect to GPO6
+                                    // DIO1 is on JP5-3: is D2 - we connect to GPO5
 };
 
 void onEvent (ev_t ev) {
@@ -131,16 +132,9 @@ void onEvent (ev_t ev) {
             if (LMIC.txrxFlags & TXRX_ACK)
               Serial.println(F("Received ack"));
             if (LMIC.dataLen) {
-              Serial.print(F("Received "));
-              Serial.print(LMIC.dataLen);
-              Serial.print(F(" bytes of payload: "));
-
-              Serial.print(F("Base64-decoded hexadecimal string payload: ")); //https://www.thethingsnetwork.org/forum/t/downlink-to-node-with-lmic/5127/12?u=learner
-              for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) { 
-              Serial.print(LMIC.frame[LMIC.dataBeg + loopcount], HEX);
-              }
-              Serial.println("\n");
-              
+              Serial.println(F("Received "));
+              Serial.println(LMIC.dataLen);
+              Serial.println(F(" bytes of payload"));
             }
             // Schedule next transmission
             os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
@@ -194,11 +188,9 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        // confirmed / confirmation by the server will be requested
         LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
         Serial.println(F("Packet queued"));
     }
-              
     // Next TX is scheduled after TX_COMPLETE event.
 }
 
@@ -291,28 +283,18 @@ void setup() {
     // LMIC_setupChannel(2, 865985000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_MILLI);
 
     // ... extra definitions for channels 3..n here.
-
-    #elif defined(CFG_cn490)
-    // CN channels 0-95 are configured automatically
-    // but only one group of 8 should (a subband) should be active
-    LMIC_selectSubBand(10);
-    
     #else
     # error Region not supported
     #endif
 
     // Disable link check validation
-    //https://forum.mcci.io/t/lmic-setlinkcheckmode-questions/96/2?u=wong-hao
     LMIC_setLinkCheckMode(0);
 
-    // CN470 uses SF12 for its RX2 window.
-    LMIC.dn2Dr = DR_SF12;
-    
-    // Set ADR mode (if mobile turn off)
-    LMIC_setAdrMode(0);
-    
+    // TTN uses SF9 for its RX2 window.
+    LMIC.dn2Dr = DR_SF9;
+
     // Set data rate and transmit power for uplink
-    LMIC_setDrTxpow(DR_SF10,15);
+    LMIC_setDrTxpow(DR_SF7,14);
 
     // Start job
     do_send(&sendjob);

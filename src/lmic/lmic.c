@@ -1976,18 +1976,6 @@ static bit_t buildDataFrame (void) {
         }
         LMIC.frame[end] = LMIC.pendTxPort;
 
-#if LMIC_DEBUG_LEVEL > 1
-        LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": upRepeat now: %d\n",os_getTime(), LMIC.upRepeat);
-#endif
-
-#if LMIC_DEBUG_LEVEL > 1
-        LMIC_DEBUG_PRINTF("%"LMIC_PRId_ostime_t": Sent %d bytes of Frame Payload: Base64-decoded hexadecimal string payload:",os_getTime(), LMIC.pendTxLen);
-        for(int loopcount = 0; loopcount < LMIC.pendTxLen; loopcount++){
-        printf("%02X", LMIC.pendTxData[LMIC.dataBeg + loopcount]);
-        }
-        printf("\n");
-#endif
-
         os_copyMem(LMIC.frame+end+1, LMIC.pendTxData, dlen);
         aes_cipher(LMIC.pendTxPort==0 ? LMIC.nwkKey : LMIC.artKey,
                    LMIC.devaddr, LMIC.seqnoUp-1,
@@ -2007,61 +1995,6 @@ static bit_t buildDataFrame (void) {
                        e_.opts.length = end-LORA::OFF_DAT_OPTS,
                        memcpy(&e_.opts[0], LMIC.frame+LORA::OFF_DAT_OPTS, end-LORA::OFF_DAT_OPTS)));
     LMIC.dataLen = flen;
-
-#if LMIC_DEBUG_LEVEL > 0
-                    LMIC_DEBUG_PRINTF("Sent %d bytes of PHY Payload: ", LMIC.dataLen);
-                    for(int loopcount = 0; loopcount < LMIC.dataLen; loopcount++){
-                    printf("%02X", LMIC.frame[loopcount]);
-                    }
-                    printf("\n"); 
-#endif
-
-#if LMIC_DEBUG_LEVEL > 0
-
-                    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-                    void lora_crc16(const char data, int *crc) {
-                        int next = 0;
-                        next  =  (((data>>0)&1) ^ ((*crc>>12)&1) ^ ((*crc>> 8)&1)                 )      ;
-                        next += ((((data>>1)&1) ^ ((*crc>>13)&1) ^ ((*crc>> 9)&1)                 )<<1 ) ;
-                        next += ((((data>>2)&1) ^ ((*crc>>14)&1) ^ ((*crc>>10)&1)                 )<<2 ) ;
-                        next += ((((data>>3)&1) ^ ((*crc>>15)&1) ^ ((*crc>>11)&1)                 )<<3 ) ;
-                        next += ((((data>>4)&1) ^ ((*crc>>12)&1)                                  )<<4 ) ;
-                        next += ((((data>>5)&1) ^ ((*crc>>13)&1) ^ ((*crc>>12)&1) ^ ((*crc>> 8)&1))<<5 ) ;
-                        next += ((((data>>6)&1) ^ ((*crc>>14)&1) ^ ((*crc>>13)&1) ^ ((*crc>> 9)&1))<<6 ) ;
-                        next += ((((data>>7)&1) ^ ((*crc>>15)&1) ^ ((*crc>>14)&1) ^ ((*crc>>10)&1))<<7 ) ;
-                        next += ((((*crc>>0)&1) ^ ((*crc>>15)&1) ^ ((*crc>>11)&1)                 )<<8 ) ;
-                        next += ((((*crc>>1)&1) ^ ((*crc>>12)&1)                                  )<<9 ) ;
-                        next += ((((*crc>>2)&1) ^ ((*crc>>13)&1)                                  )<<10) ;
-                        next += ((((*crc>>3)&1) ^ ((*crc>>14)&1)                                  )<<11) ;
-                        next += ((((*crc>>4)&1) ^ ((*crc>>15)&1) ^ ((*crc>>12)&1) ^ ((*crc>> 8)&1))<<12) ;
-                        next += ((((*crc>>5)&1) ^ ((*crc>>13)&1) ^ ((*crc>> 9)&1)                 )<<13) ;
-                        next += ((((*crc>>6)&1) ^ ((*crc>>14)&1) ^ ((*crc>>10)&1)                 )<<14) ;
-                        next += ((((*crc>>7)&1) ^ ((*crc>>15)&1) ^ ((*crc>>11)&1)                 )<<15) ;
-                        (*crc) = next;
-                    }
-
-                    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-                    uint16_t sx1302_lora_payload_crc(const uint8_t * data, uint8_t size) {
-                        int i;
-                        int crc = 0;
-
-                        for (i = 0; i < size; i++) {
-                            lora_crc16(data[i], &crc);
-                        }
-
-                        //printf("CRC16: 0x%02X 0x%02X (%X)\n", (uint8_t)(crc >> 8), (uint8_t)crc, crc);
-                        return (uint16_t)crc;
-                    }
-
-
-                    uint16_t payload_crc16_calc;
-
-                    payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
-                    LMIC_DEBUG_PRINTF("Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n ", payload_crc16_calc, payload_crc16_calc);
-
-#endif
 
     return 1;
 }

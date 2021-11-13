@@ -20,7 +20,6 @@
  * Note: LoRaWAN per sub-band duty-cycle limitation is enforced (1% in
  * g1, 0.1% in g2), but not the TTN fair usage policy (which is probably
  * violated by this sketch when left running for longer)!
-
  * To use this sketch, first register your application and device with
  * the things network, to set or generate an AppEUI, DevEUI and AppKey.
  * Multiple devices can use the same AppEUI, but each device has its own
@@ -53,17 +52,17 @@
 // first. When copying an EUI from ttnctl output, this means to reverse
 // the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
 // 0x70.
-static const u1_t PROGMEM APPEUI[8]={ 0x2a, 0x7c, 0x0c, 0x64, 0xec, 0x4c, 0xec, 0x8b };
+static const u1_t PROGMEM APPEUI[8]={ FILLMEIN };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 // This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8]={ 0x2a, 0x7c, 0x0c, 0x64, 0xec, 0x4c, 0xec, 0x8b };
+static const u1_t PROGMEM DEVEUI[8]={ FILLMEIN };
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 
 // This key should be in big endian format (or, since it is not really a
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
-static const u1_t PROGMEM APPKEY[16] = { 0x15, 0x61, 0x35, 0x45, 0x76, 0xa0, 0x5e, 0x2b, 0x0d, 0xb9, 0x20, 0xda, 0x6f, 0xf3, 0xe3, 0xe1 };
+static const u1_t PROGMEM APPKEY[16] = { FILLMEIN };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
 static uint8_t mydata[] = "Hello, world!";
@@ -71,16 +70,14 @@ static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 10;
+const unsigned TX_INTERVAL = 60;
 
-// Pin mapping Dragino Shiled
-// Adapted for Feather M0 per p.10 of [feather]
+// Pin mapping
 const lmic_pinmap lmic_pins = {
-    .nss = 10,// Connected to pin D10
-    .rxtx = LMIC_UNUSED_PIN,// For placeholder only, Do not connected on RFM92/RFM95
-    .rst = 9,// Needed on RFM92/RFM95? (probably not)
-    .dio = {2, 6, 7},// Specify pin numbers for DIO0, 1, 2
-// connected to D2, D6, D7 
+    .nss = 6,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = 5,
+    .dio = {2, 3, 4},
 };
 
 void printHex2(unsigned v) {
@@ -139,7 +136,6 @@ void onEvent (ev_t ev) {
             // Disable link check validation (automatically enabled
             // during join, but because slow data rates change max TX
 	    // size, we don't use it in this example.
-            //https://forum.mcci.io/t/lmic-setlinkcheckmode-questions/96/2?u=wong-hao
             LMIC_setLinkCheckMode(0);
             break;
         /*
@@ -163,14 +159,7 @@ void onEvent (ev_t ev) {
             if (LMIC.dataLen) {
               Serial.print(F("Received "));
               Serial.print(LMIC.dataLen);
-              Serial.print(F(" bytes of payload: "));
-
-              Serial.print(F("Base64-decoded hexadecimal string payload: ")); //https://www.thethingsnetwork.org/forum/t/downlink-to-node-with-lmic/5127/12?u=learner
-              for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) { 
-              Serial.print(LMIC.frame[LMIC.dataBeg + loopcount], HEX);
-              }
-              Serial.println("\n");
-              
+              Serial.println(F(" bytes of payload"));
             }
             // Schedule next transmission
             os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
@@ -225,7 +214,6 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        // confirmed / confirmation by the server will be requested
         LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
         Serial.println(F("Packet queued"));
     }
@@ -233,7 +221,7 @@ void do_send(osjob_t* j){
 }
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     Serial.println(F("Starting"));
 
     #ifdef VCC_ENABLE
@@ -248,19 +236,6 @@ void setup() {
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
 
-    #if defined(CFG_cn490)
-    // CN channels 0-95 are configured automatically
-    // but only one group of 8 should (a subband) should be active
-    //TODO: LMIC_selectSubBand沿用的us915且不会改，故只能设置0-7八组信道
-    LMIC_selectSubBand(7);
-    
-    #else
-    # error Region not supported
-    #endif
-    
-    // Set ADR mode (if mobile turn off)
-    LMIC_setAdrMode(0);
-    
     // Start job (sending automatically starts OTAA too)
     do_send(&sendjob);
 }
