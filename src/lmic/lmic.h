@@ -30,6 +30,8 @@
 //! @file
 //! @brief LMIC API
 
+#define StageOption 2        //选择CRC冗余的方法
+
 #ifndef _lmic_h_
 #define _lmic_h_
 

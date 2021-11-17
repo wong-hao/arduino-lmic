@@ -2045,8 +2045,6 @@ static bit_t buildDataFrame (void) {
     payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
     printf("Orignal Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n", payload_crc16_calc, payload_crc16_calc);
     
-    #define StageOption 0        //选择CRC冗余的方法
-
     switch (StageOption) {
         case 0: { //不作处理
             break;
