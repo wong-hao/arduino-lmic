@@ -2044,9 +2044,39 @@ static bit_t buildDataFrame (void) {
     u2_t payload_crc16_calc;
     payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
     printf("Orignal Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n", payload_crc16_calc, payload_crc16_calc);
-    LMIC.frame[LMIC.dataLen] = payload_crc16_calc >> 8; //https://stackoverflow.com/a/1289360/12650926
-    LMIC.frame[LMIC.dataLen + 1] = payload_crc16_calc & 0xff;
-    LMIC.dataLen = LMIC.dataLen + 2;
+    
+    #define StageOption 0        //选择CRC冗余的方法
+
+    switch (StageOption) {
+        case 0: { //不作处理
+            break;
+        }
+        case 1: { //CRC插到PHY Payload最后
+            LMIC.frame[LMIC.dataLen] = payload_crc16_calc >> 8; //https://stackoverflow.com/a/1289360/12650926
+            LMIC.frame[LMIC.dataLen + 1] = payload_crc16_calc & 0xff;
+            LMIC.dataLen = LMIC.dataLen + 2;
+            break;
+        }
+        case 2: { //CRC插到PHY Payload最前
+            u2_t frame_copy[MAX_LEN_FRAME];
+            frame_copy[0] = payload_crc16_calc >> 8;
+            frame_copy[1] = payload_crc16_calc & 0xff;
+            for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) {
+                frame_copy[loopcount + 2] = LMIC.frame[loopcount];
+            }
+            memset(LMIC.frame, 0, LMIC.dataLen * sizeof(u2_t));
+            LMIC.dataLen = LMIC.dataLen + 2;
+            for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) {
+                LMIC.frame[loopcount] = frame_copy[loopcount];
+            }
+            break;
+        }
+        default: {
+            printf("StageOption is illegal! This program will be shut down!\n");
+            return 0;
+        }
+    
+    }
 
     return 1;
 }
