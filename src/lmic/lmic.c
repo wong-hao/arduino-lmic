@@ -2034,28 +2034,28 @@ static bit_t buildDataFrame (void) {
                        e_.opts.length = end-LORA::OFF_DAT_OPTS,
                        memcpy(&e_.opts[0], LMIC.frame+LORA::OFF_DAT_OPTS, end-LORA::OFF_DAT_OPTS)));
     LMIC.dataLen = flen;
-
-
-    printf("Original PHY payload: ");
-    for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) {
-        printf("%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
-    }
-    printf("\n");
-    u2_t payload_crc16_calc;
-    payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
-    printf("Orignal Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n", payload_crc16_calc, payload_crc16_calc);
     
+    for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) {
+        LMIC.originalframe[loopcount] = LMIC.frame[loopcount];
+    }
+
     switch (StageOption) {
         case 0: { //不作处理
             break;
         }
         case 1: { //CRC插到PHY Payload最后
+            u2_t payload_crc16_calc;
+            payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
+
             LMIC.frame[LMIC.dataLen] = payload_crc16_calc >> 8; //https://stackoverflow.com/a/1289360/12650926
             LMIC.frame[LMIC.dataLen + 1] = payload_crc16_calc & 0xff;
             LMIC.dataLen = LMIC.dataLen + 2;
             break;
         }
         case 2: { //CRC插到PHY Payload最前
+            u2_t payload_crc16_calc;
+            payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
+
             u2_t frame_copy[MAX_LEN_FRAME];
             frame_copy[0] = payload_crc16_calc >> 8;
             frame_copy[1] = payload_crc16_calc & 0xff;

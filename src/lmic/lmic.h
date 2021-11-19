@@ -665,6 +665,7 @@ struct lmic_t {
     u1_t        dataBeg;    // 0 or start of data (dataBeg-1 is port)
     u1_t        dataLen;    // 0 no data or zero length data, >0 byte count of data
     u1_t        frame[MAX_LEN_FRAME];
+    u1_t        originalframe[MAX_LEN_FRAME]; //插入CRC值之前的frame的副本
 
 #if !defined(DISABLE_BEACONS)
     u1_t        bcnChnl;
