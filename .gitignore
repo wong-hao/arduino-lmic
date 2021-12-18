@@ -47,4 +47,5 @@ __vm
 # files from vscode
 .vscode
 
-arduino-lmic.si4project
+# files from Source Insight 4.0
+*.si4project
