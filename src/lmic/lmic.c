@@ -2032,27 +2032,31 @@ static bit_t buildDataFrame (void) {
                        e_.opts.length = end-LORA::OFF_DAT_OPTS,
                        memcpy(&e_.opts[0], LMIC.frame+LORA::OFF_DAT_OPTS, end-LORA::OFF_DAT_OPTS)));
     LMIC.dataLen = flen;
-    
+
     switch (ControlOption){
         case 0: {
             break;
         }
         case 1: {
-            printf("Original sent %d bytes PHYPayload: ", LMIC.dataLen);
-            for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) {
-                printf("%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
-            }
-            printf("\n");
+            if(DebugOption){
+                printf("Original sent %d bytes PHYPayload: ", LMIC.dataLen);
+                for (int loopcount = 0; loopcount < LMIC.dataLen; loopcount++) {
+                    printf("%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
+                }
+                printf("\n");
 
-            printf("Orignal Payload MIC Hex: ", LMIC.dataLen);
-            for (int loopcount = LMIC.dataLen-4; loopcount < LMIC.dataLen; loopcount++) {
-                printf("%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
+                printf("Orignal Payload MIC Hex: ", LMIC.dataLen);
+                for (int loopcount = LMIC.dataLen-4; loopcount < LMIC.dataLen; loopcount++) {
+                    printf("%02X", LMIC.frame[LMIC.dataBeg + loopcount]);
+                }
+                printf("\n");
             }
-            printf("\n");
 
             u2_t payload_crc16_calc;
             payload_crc16_calc = sx1302_lora_payload_crc(LMIC.frame, LMIC.dataLen);
-            printf("Orignal Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n", payload_crc16_calc, payload_crc16_calc);
+            if(DebugOption){
+                printf("Orignal Payload CRC Hex (0x%04X), Payload CRC DEC (%u)\n", payload_crc16_calc, payload_crc16_calc);
+            }
 
             switch (CRCOption) {
                 case 0: { //不作处理

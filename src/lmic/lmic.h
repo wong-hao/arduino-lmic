@@ -32,7 +32,8 @@
 
 #define ControlOption 1    //是否进行差错控制
 #define CRCOption 2        //选择CRC冗余的方法
-#define SensorOption 1     //是否连接到传感器
+#define SensorOption 0     //是否连接到传感器
+#define DebugOption 0      //是否输出Debug信息
 
 #ifndef _lmic_h_
 #define _lmic_h_
