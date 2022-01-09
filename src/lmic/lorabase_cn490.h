@@ -69,7 +69,7 @@ enum {
         CN490_FREQ_MAX = 510000000
 };
 enum {
-        CN490_TX_EIRP_MAX_DBM = 19      // 19.15 dBm
+        CN490_TX_EIRP_MAX_DBM = 19      // 19 dBm (RP002-1.0.3 LoRaWAN® Regional Parameters)
 };
 
 enum { DR_PAGE_CN490 = 0x10 * (LMIC_REGION_cn490 - 1) };
