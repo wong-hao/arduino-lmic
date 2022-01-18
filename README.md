@@ -1,6 +1,6 @@
 # Arduino-LMIC library ("MCCI LoRaWAN LMIC Library")
 
-[![GitHub release](https://img.shields.io/github/release/mcci-catena/arduino-lmic.svg)](https://github.com/mcci-catena/arduino-lmic/releases/latest) [![GitHub commits](https://img.shields.io/github/commits-since/mcci-catena/arduino-lmic/latest.svg)](https://github.com/mcci-catena/arduino-lmic/compare/v4.1.0...master) [![Arduino CI](https://img.shields.io/github/workflow/status/mcci-catena/arduino-lmic/Arduino%20CI)](https://github.com/mcci-catena/arduino-lmic/actions)
+[![GitHub release](https://img.shields.io/github/release/mcci-catena/arduino-lmic.svg)](https://github.com/mcci-catena/arduino-lmic/releases/latest) [![GitHub commits](https://img.shields.io/github/commits-since/mcci-catena/arduino-lmic/latest.svg)](https://github.com/mcci-catena/arduino-lmic/compare/v4.1.1...master) [![Arduino CI](https://img.shields.io/github/workflow/status/mcci-catena/arduino-lmic/Arduino%20CI)](https://github.com/mcci-catena/arduino-lmic/actions)
 
 **Contents:**
 
@@ -17,80 +17,81 @@
 <!-- markdownlint-disable -->
 <!-- TOC depthFrom:2 updateOnSave:true -->
 
-- [Introduction](#introduction)
-- [Installing](#installing)
-- [Getting Help](#getting-help)
-	- [If it's not working](#if-its-not-working)
-	- [If you've found a bug](#if-youve-found-a-bug)
-- [Features](#features)
-- [Additional Documentation](#additional-documentation)
-	- [PDF/Word Documentation](#pdfword-documentation)
-	- [Adding Regions](#adding-regions)
-	- [Known bugs and issues](#known-bugs-and-issues)
-		- [Timing Issues](#timing-issues)
-		- [Working with MCCI Murata-based boards](#working-with-mcci-murata-based-boards)
-		- [Event-Handling Issues](#event-handling-issues)
-- [Configuration](#configuration)
-	- [Selecting the LoRaWAN Version](#selecting-the-lorawan-version)
-		- [Selecting V1.0.2](#selecting-v102)
-		- [Selecting V1.0.3](#selecting-v103)
-	- [Selecting the LoRaWAN Region Configuration](#selecting-the-lorawan-region-configuration)
-		- [eu868, as923, in866, kr920](#eu868-as923-in866-kr920)
-		- [us915, au915](#us915-au915)
-	- [Selecting the target radio transceiver](#selecting-the-target-radio-transceiver)
-	- [Controlling use of interrupts](#controlling-use-of-interrupts)
-	- [Disabling PING](#disabling-ping)
-	- [Disabling Beacons](#disabling-beacons)
-	- [Enabling Network Time Support](#enabling-network-time-support)
-	- [Rarely changed variables](#rarely-changed-variables)
-		- [Changing debug output](#changing-debug-output)
-		- [Getting debug from the RF library](#getting-debug-from-the-rf-library)
-		- [Selecting the AES library](#selecting-the-aes-library)
-		- [Defining the OS Tick Frequency](#defining-the-os-tick-frequency)
-		- [Setting the SPI-bus frequency](#setting-the-spi-bus-frequency)
-		- [Changing handling of runtime assertion failures](#changing-handling-of-runtime-assertion-failures)
-		- [Disabling JOIN](#disabling-join)
-		- [Disabling Class A MAC commands](#disabling-class-a-mac-commands)
-		- [Disabling Class B MAC commands](#disabling-class-b-mac-commands)
-		- [Disabling user events](#disabling-user-events)
-		- [Disabling external reference to `onEvent()`](#disabling-external-reference-to-onevent)
-		- [Enabling long messages](#enabling-long-messages)
-		- [Enabling LMIC event logging calls](#enabling-lmic-event-logging-calls)
-		- [Special purpose](#special-purpose)
-- [Supported hardware](#supported-hardware)
-- [Pre-Integrated Boards](#pre-integrated-boards)
-- [PlatformIO](#platformio)
-- [Manual configuration](#manual-configuration)
-	- [Power](#power)
-	- [SPI](#spi)
-	- [DIO pins](#dio-pins)
-	- [Reset](#reset)
-	- [RXTX](#rxtx)
-	- [RXTX Polarity](#rxtx-polarity)
-	- [Pin mapping](#pin-mapping)
-		- [Advanced initialization](#advanced-initialization)
-		- [HalConfiguration_t methods](#halconfiguration_t-methods)
-		- [LoRa Nexus by Ideetron](#lora-nexus-by-ideetron)
-- [Example Sketches](#example-sketches)
-- [Timing](#timing)
-	- [Controlling protocol timing](#controlling-protocol-timing)
-	- [`LMIC_setClockError()`](#lmic_setclockerror)
-	- [Interrupts and Arduino system timing](#interrupts-and-arduino-system-timing)
-- [Downlink data rate](#downlink-data-rate)
-- [Encoding Utilities](#encoding-utilities)
-	- [sflt16](#sflt16)
-		- [JavaScript decoder](#javascript-decoder)
-	- [uflt16](#uflt16)
-		- [uflt16 JavaScript decoder](#uflt16-javascript-decoder)
-	- [sflt12](#sflt12)
-		- [sflt12f JavaScript decoder](#sflt12f-javascript-decoder)
-	- [uflt12](#uflt12)
-		- [uflt12f JavaScript decoder](#uflt12f-javascript-decoder)
-- [Release History](#release-history)
-- [Contributions](#contributions)
-- [Trademark Acknowledgements](#trademark-acknowledgements)
-- [License](#license)
-	- [Support Open Source Hardware and Software](#support-open-source-hardware-and-software)
+- [Arduino-LMIC library ("MCCI LoRaWAN LMIC Library")](#arduino-lmic-library-mcci-lorawan-lmic-library)
+  - [Introduction](#introduction)
+  - [Installing](#installing)
+  - [Getting Help](#getting-help)
+    - [If it's not working](#if-its-not-working)
+    - [If you've found a bug](#if-youve-found-a-bug)
+  - [Features](#features)
+  - [Additional Documentation](#additional-documentation)
+    - [PDF/Word Documentation](#pdfword-documentation)
+    - [Adding Regions](#adding-regions)
+    - [Known bugs and issues](#known-bugs-and-issues)
+      - [Timing Issues](#timing-issues)
+      - [Working with MCCI Murata-based boards](#working-with-mcci-murata-based-boards)
+      - [Event-Handling Issues](#event-handling-issues)
+  - [Configuration](#configuration)
+    - [Selecting the LoRaWAN Version](#selecting-the-lorawan-version)
+      - [Selecting V1.0.2](#selecting-v102)
+      - [Selecting V1.0.3](#selecting-v103)
+    - [Selecting the LoRaWAN Region Configuration](#selecting-the-lorawan-region-configuration)
+      - [eu868, as923, in866, kr920](#eu868-as923-in866-kr920)
+      - [us915, au915](#us915-au915)
+    - [Selecting the target radio transceiver](#selecting-the-target-radio-transceiver)
+    - [Controlling use of interrupts](#controlling-use-of-interrupts)
+    - [Disabling PING](#disabling-ping)
+    - [Disabling Beacons](#disabling-beacons)
+    - [Enabling Network Time Support](#enabling-network-time-support)
+    - [Rarely changed variables](#rarely-changed-variables)
+      - [Changing debug output](#changing-debug-output)
+      - [Getting debug from the RF library](#getting-debug-from-the-rf-library)
+      - [Selecting the AES library](#selecting-the-aes-library)
+      - [Defining the OS Tick Frequency](#defining-the-os-tick-frequency)
+      - [Setting the SPI-bus frequency](#setting-the-spi-bus-frequency)
+      - [Changing handling of runtime assertion failures](#changing-handling-of-runtime-assertion-failures)
+      - [Disabling JOIN](#disabling-join)
+      - [Disabling Class A MAC commands](#disabling-class-a-mac-commands)
+      - [Disabling Class B MAC commands](#disabling-class-b-mac-commands)
+      - [Disabling user events](#disabling-user-events)
+      - [Disabling external reference to `onEvent()`](#disabling-external-reference-to-onevent)
+      - [Enabling long messages](#enabling-long-messages)
+      - [Enabling LMIC event logging calls](#enabling-lmic-event-logging-calls)
+      - [Special purpose](#special-purpose)
+  - [Supported hardware](#supported-hardware)
+  - [Pre-Integrated Boards](#pre-integrated-boards)
+  - [PlatformIO](#platformio)
+  - [Manual configuration](#manual-configuration)
+    - [Power](#power)
+    - [SPI](#spi)
+    - [DIO pins](#dio-pins)
+    - [Reset](#reset)
+    - [RXTX](#rxtx)
+    - [RXTX Polarity](#rxtx-polarity)
+    - [Pin mapping](#pin-mapping)
+      - [Advanced initialization](#advanced-initialization)
+      - [HalConfiguration_t methods](#halconfiguration_t-methods)
+      - [LoRa Nexus by Ideetron](#lora-nexus-by-ideetron)
+  - [Example Sketches](#example-sketches)
+  - [Timing](#timing)
+    - [Controlling protocol timing](#controlling-protocol-timing)
+    - [`LMIC_setClockError()`](#lmic_setclockerror)
+    - [Interrupts and Arduino system timing](#interrupts-and-arduino-system-timing)
+  - [Downlink data rate](#downlink-data-rate)
+  - [Encoding Utilities](#encoding-utilities)
+    - [sflt16](#sflt16)
+      - [JavaScript decoder](#javascript-decoder)
+    - [uflt16](#uflt16)
+      - [uflt16 JavaScript decoder](#uflt16-javascript-decoder)
+    - [sflt12](#sflt12)
+      - [sflt12f JavaScript decoder](#sflt12f-javascript-decoder)
+    - [uflt12](#uflt12)
+      - [uflt12f JavaScript decoder](#uflt12f-javascript-decoder)
+  - [Release History](#release-history)
+  - [Contributions](#contributions)
+  - [Trademark Acknowledgements](#trademark-acknowledgements)
+  - [License](#license)
+    - [Support Open Source Hardware and Software](#support-open-source-hardware-and-software)
 
 <!-- /TOC -->
 <!-- markdownlint-restore -->
@@ -119,7 +120,6 @@ A separate library, [MCCI `arduino-lorawan`](https://github.com/mcci-catena/ardu
 The examples in this library (apart from the compliance sketch) are somewhat primitive. A very complete cross-platform Arduino application based on the LMIC has been published by Leonel Lopes Parente ([`@lnlp`](https://github.com/lnlp)) as [LMIC-node](https://github.com/lnlp/LMIC-node). That application specifically targets The Things Network.
 
 Although the wrappers in this library are designed to make the LMIC useful in the Arduino environment, the maintainers have tried to be careful to keep the core LMIC code generally useful. For example, I use this library without modification (but with wrappers) on a RISC-V platform in a non-Arduino environment.
-
 
 ## Installing
 
@@ -854,8 +854,7 @@ The library observes and processes rising edges on the pins as part of `os_runlo
 This can be configured in one of two ways (see
 [Controlling use of interrupts](#controlling-use-of-interrupts)).  See [Interrupts and Arduino system timing](#interrupts-and-arduino-system-timing) for implementation details.
 
-By default, the library 
-polls the enabled pins to determine whether an event has occurred. This approach
+By default, the library polls the enabled pins to determine whether an event has occurred. This approach
 allows use of any CPU pin to sense the DIOs, and makes no assumptions about
 interrupts. However, it means that the end-of-transmit event is not observed
 (and time-stamped) until `os_runloop_once()` is called.
@@ -1244,7 +1243,14 @@ function uflt12f(rawUflt12)
 
 ## Release History
 
-- v4.1 contains the following changes
+- v4.1.1 is a patch release.
+
+  - Fix US-like regions when network server disables all channels before setting others up ([#819](https://github.com/mcci-catena/arduino-lmic/issues/819)).
+  - Fix US-like regions when network server disables all banks before setting others up ([#820](https://github.com/mcci-catena/arduino-lmic/issues/820)).
+  - Documentation improvements in README and in code commentary.
+
+- v4.1.0 contains the following changes
+
   - Adapt `ttn-otaa-network-time` example to be compatible with [PaulStoffregen/Time](https://github.com/PaulStoffregen/Time) v1.6.1, which deletes `Time.h` in favor of `TimeLib.h` [#763](https://github.com/mcci-catena/arduino-lmic/issues/763). Version is v4.0.1-pre1.
   - Add support for TTGO LoRa32-OLED v2.1.6. (Thanks to [@ChrSchultz](https://github.com/ChrSchultz), [#692](https://github.com/mcci-catena/arduino-lmic/pull/692).)
   - Correct max TX EIRP for Japan to 13 dBm. (Thanks to [@ryos36](https://github.com/ryos36), [#662](https://github.com/mcci-catena/arduino-lmic/pull/662).)
