@@ -245,7 +245,7 @@ enum { FREQ_PING         = CN490_125kHz_DNFBASE + 0*CN490_125kHz_DNFSTEP };  // 
 enum { DR_PING           = CN490_DR_SF10 };       // default ping DR
 enum { CHNL_DNW2         = 0 };
 enum { FREQ_DNW2         = CN490_FDOWN };
-enum { DR_DNW2           = CN490_DR_SF12 };
+enum { DR_DNW2           = CN490_DR_SF11 };
 enum { CHNL_BCN          = 0 }; // used only for default init of state (rotating beacon scheme)
 enum { DR_BCN            = CN490_DR_SF10 };
 // TODO(tmm@mcci.com): check this, as beacon DR was SF10 in IBM code.
