@@ -19,16 +19,41 @@
  * including, but not limited to, copying, modification and redistribution.
  * NO WARRANTY OF ANY KIND IS PROVIDED.
  *******************************************************************************/
+
+/***************************************************************************
+  This is a library for the CCS811 air
+
+  This sketch reads the sensor
+
+  Designed specifically to work with the Adafruit CCS811 breakout
+  ----> http://www.adafruit.com/products/3566
+
+  These sensors use I2C to communicate. The device's I2C address is 0x5A
+
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit andopen-source hardware by purchasing products
+  from Adafruit!
+
+  Written by Dean Miller for Adafruit Industries.
+  BSD license, all text above must be included in any redistribution
+ ***************************************************************************/
+
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
 
-// include the DHT22 Sensor Library
+#include <payload_crc.h>
+
+ // include the DHT22 Sensor Library
 #include "DHT.h"
 
 // DHT digital pin and sensor type
-#define DHTPIN 10
+#define DHTPIN A1
 #define DHTTYPE DHT22
+
+#include "Adafruit_CCS811.h"
+
+Adafruit_CCS811 ccs;
 
 //
 // For normal use, we require that you edit the sketch to replace FILLMEIN
@@ -184,39 +209,58 @@ void do_send(osjob_t* j){
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
-        /*
         // read the temperature from the DHT22
         float temperature = dht.readTemperature();
-        Serial.print("Temperature: "); Serial.print(temperature);
+        Serial.print("Temperature: ");
+        Serial.print(temperature);
         Serial.println(" *C");
-        // adjust for the f2sflt16 range (-1 to 1)
-        temperature = temperature / 100;
+
+        // Read temperature as Fahrenheit (isFahrenheit = true)
+        float temperaturef = dht.readTemperature(true);
 
         // read the humidity from the DHT22
         float rHumidity = dht.readHumidity();
         Serial.print("%RH ");
         Serial.println(rHumidity);
-        // adjust for the f2sflt16 range (-1 to 1)
-        rHumidity = rHumidity / 100;
 
-        // float -> int
-        // note: this uses the sflt16 datum (https://github.com/mcci-catena/arduino-lmic#sflt16)
-        uint16_t payloadTemp = LMIC_f2sflt16(temperature);
-        // int -> bytes
-        byte tempLow = lowByte(payloadTemp);
-        byte tempHigh = highByte(payloadTemp);
-        // place the bytes into the payload
-        payload[0] = tempLow;
-        payload[1] = tempHigh;
 
-        // float -> int
-        uint16_t payloadHumid = LMIC_f2sflt16(rHumidity);
-        // int -> bytes
-        byte humidLow = lowByte(payloadHumid);
-        byte humidHigh = highByte(payloadHumid);
-        payload[2] = humidLow;
-        payload[3] = humidHigh;
-        */
+        // Check if any reads failed and exit early (to try again).
+        if (isnan(temperature) || isnan(temperaturef) || isnan(rHumidity)) {
+            Serial.println(F("Failed to read from DHT sensor!"));
+            return;
+        }
+
+        u2_t CO2 = ccs.geteCO2();
+        u2_t TVOC = ccs.getTVOC();
+
+        if (ccs.available()) {
+            if (!ccs.readData()) {
+                Serial.print("CO2: ");
+                Serial.print(CO2);
+                Serial.print("ppm, TVOC: ");
+                Serial.println(TVOC);
+            } else {
+                Serial.println("ERROR!");
+                while (1)
+                    ;
+            }
+        }
+
+        u2_t tem1 = (temperature * 10);
+        payload[2] = tem1 >> 8; //Uint16 to Uint8: https://stackoverflow.com/a/1289360/12650926
+        payload[3] = tem1 & 0xff;
+        //Uint8 to Uint16: u2_t temp1 = (payload[2] << 8) + (payload[3] & 0xff); //Uint8 to Uint16: https://stackoverflow.com/a/59123471/12650926
+
+        payload[6] = rHumidity * 2;
+
+        u2_t CO21 = (CO2 * 10);//TODO: when mutiply 100 times, the value stackoverflow
+        payload[9] = CO21 >> 8;
+        payload[10] = CO21 & 0xff;
+
+        u2_t TVOC1 = (TVOC * 100);
+        payload[13] = TVOC1 >> 8;
+        payload[14] = TVOC1 & 0xff;
+                
         // prepare upstream data transmission at the next possible time.
         // transmit on port 1 (the first parameter); you can use any value from 1 to 223 (others are reserved).
         // don't request an ack (the last parameter, if not zero, requests an ack from the network).
