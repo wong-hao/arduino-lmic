@@ -277,6 +277,16 @@ void setup() {
     delay(100);
     Serial.println(F("Starting"));
 
+    dht.begin();
+
+    if (!ccs.begin()) {
+        Serial.println("Failed to start sensor! Please check your wiring.");
+        while (1);
+    }
+
+    // Wait for the sensor to be ready
+    while (!ccs.available());
+            
     // LMIC init
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
