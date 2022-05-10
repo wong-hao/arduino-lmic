@@ -187,6 +187,22 @@ void onEvent (ev_t ev) {
         */
         case EV_TXSTART:
             Serial.println(F("EV_TXSTART"));
+
+            u1_t sf = getSf(LMIC.rps) + 6;// 1 == SF7
+            u1_t bw = getBw(LMIC.rps);
+            u1_t cr = getCr(LMIC.rps);
+            u1_t pw = LMIC.adrTxPow;
+            u2_t fcntUp = (u2_t) LMIC.seqnoUp - 1;
+            printf("%" LMIC_PRId_ostime_t ": TXMODE, freq=%" PRIu32 ", len=%d, SF=%d, PW=%d, BW=%d, CR=4/%d, FCNT=%d, IH=%d\n",
+                    os_getTime(), LMIC.freq, LMIC.dataLen, sf,
+                    pw,
+                    bw == BW125 ? 125 : (bw == BW250 ? 250 : 500),
+                    cr == CR_4_5 ? 5 : (cr == CR_4_6 ? 6 : (cr == CR_4_7 ? 7 : 8)),
+                    fcntUp,
+                    getIh(LMIC.rps));
+
+            printf("upRepeat now : % d\n", LMIC.upRepeat);
+
             break;
         case EV_TXCANCELED:
             Serial.println(F("EV_TXCANCELED"));
